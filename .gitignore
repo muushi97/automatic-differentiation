@@ -1,0 +1,5 @@
+*.exe
+*.momiage
+object/
+obj/
+
