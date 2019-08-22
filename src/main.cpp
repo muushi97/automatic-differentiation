@@ -1,128 +1,105 @@
 #include <iostream>
 #include <type_traits>
+#include <tuple>
+#include <cmath>
 
-//#include "dual_number.hpp"
+#include "dual_number.hpp"
+#include "tuple_list.hpp"
+#include "nodes.hpp"
+#include "operations.hpp"
 
-
+using namespace automatic_differentiation;
 
 // 型確認用
 template <typename T>
 struct type_detector;
+template <int T>
+struct nontype_detector;
 
+namespace audeff {
+    template <int h> struct test_height { constexpr static int height = h; };
 
+    template <class... Elements>
+    void differ_impl(tuple_list<Elements...> &list) {
+        if constexpr (list.size == 0)
+            return;
+        else {
+            auto first = list.first();
+            first.differentiate();
 
-// 葉になる型
-//template <class T>
-//struct variable {
-//    const T val;
-//    constexpr variable(T&& v) : val(v) { std::cout << "new instance lvalue reference" << std::endl; }
-//    constexpr auto operator () () { return val; }
-//};
-//template <class T>
-//struct constant {
-//    T val;
-//    constexpr constant(T v) : val(v) { std::cout << "new instance rvalue reference" << std::endl; }
-//    constexpr auto operator () () { return val; }
-//};
+            auto li = list.pop_front();
+            if constexpr (first.height == 0)
+                differ_impl(li);
+            else {
+                if constexpr (first.size == 1) {
+                    auto lii = li.merge(first.template get_operand<0>());
+                    differ_impl(lii);
+                }
+                else if constexpr (first.size == 2) {
+                    auto left = first.template get_operand<0>();
+                    auto right = first.template get_operand<1>();
+                    if constexpr (left.height < right.height) {
+                        auto lii = li.merge(right, left);
+                        differ_impl(lii);
+                    }
+                    else {
+                        auto li = list.pop_front().merge(left, right);
+                        differ_impl(li);
+                    }
+                }
+                else
+                    differ_impl(li);
+            }
+        }
+    };
 
-template <class T>
-class value {
-    T val;
-    typename std::conditional_t<std::is_lvalue_reference<T>::value, std::remove_reference_t<T>, T> derivative;
-public:
-    constexpr value(T&& v) : val(v), derivative() { }
-    constexpr auto operator () () -> std::conditional_t<std::is_lvalue_reference<T>::value, T, T&> { return val; }
-};
-template <class T>
-value(T&& a) -> value<T>;
+    template <class Expression>
+    void differ(Expression &e) {
+        e.add_derivative();
+        auto li = make_list(e);
 
-// 単項演算
-template <class Op, class C>
-class unary_operation {
-    C &c;
-public:
-    constexpr unary_operation(C& c) : c(c) { }
-    constexpr auto operator () () { return Op::apply(c); }
-};
-struct assignment { template <class C> static constexpr auto apply(C& c) { return c(); } };
-
-
-// 二項演算
-template <class Op, class L, class R>
-class binary_operation {
-    L left;
-    R right;
-
-    inline constexpr auto getLeftValue() const { return left(); }
-    inline constexpr auto getRightValue() const { return right(); }
-public:
-    constexpr binary_operation(L& left, R& right) : left(left), right(right) { }
-    constexpr auto operator () () { return Op::apply(left, right); }
-};
-
-//template <class L, class R>
-//binary_operation<addision, L, R>::
-
-// 加法
-struct addition { template <class L, class R> static constexpr auto apply(L& left, R& right) { return (left() + right()); } };
-template <class L, class R> auto operator + (L&& left, R&& right) { return binary_operation<addition, L, R>(left, right); }
-// 減法
-struct subtraction { template <class L, class R> static constexpr auto apply(L& left, R& right) { return (left() - right()); } };
-template <class L, class R> auto operator - (L&& left, R&& right) { return binary_operation<subtraction, L, R>(left, right); }
-// 乗法
-struct multiplication { template <class L, class R> static constexpr auto apply(L& left, R& right) { return (left() * right()); } };
-template <class L, class R> auto operator * (L&& left, R&& right) { return binary_operation<multiplication, L, R>(left, right); }
-// 除法
-struct division { template <class L, class R> static constexpr auto apply(L& left, R& right) { return (left() / right()); } };
-template <class L, class R> auto operator / (L&& left, R&& right) { return binary_operation<division, L, R>(left, right); }
-
-
-template <typename T>
-void fuga(T&& a) {
-    type_detector<decltype(a)> bbb;
+        differ_impl(li);
+    };
 }
 
-using namespace std;
+using namespace audeff;
 
-template <class T>
-struct hoge {
-    using type = T;
-    hoge(T&& a)  { }
-};
-template <class T>
-hoge(T&& a) -> hoge<T>;
+using std::cout;
+using std::endl;
 
 int main() {
-    //fuga(a);
-
-    int a = 10;
-    int b = 20;
-    int c = 30;
+    double a = 10;
+    double b = 20;
+    double c = 30;
 
     value A(a);
     value B(b);
     value C(c);
 
-    a = 10000;
-    b = 2000;
-    c = 300;
+    a = 10000.0;
+    b = 2000.0;
+    c = 300.0;
 
-    value D(11);
-    value E(22);
-    value G(33);
+    value D(11.0);
+    value E(22.0);
+    value G(33.0);
 
     auto alpha_ = A + A;
-    auto alpha = alpha_ + A;
+    auto alpha = A + A;
     auto beta = A - B;
     auto gamma = A * B;
-    auto delta = A / B;
-
-    //type_detector<decltype(alpha)> fuga;
+    auto delta = A / B + A;
 
     cout << "A + B = " << alpha() << endl;
     cout << "A - B = " << beta() << endl;
     cout << "A * B = " << gamma() << endl;
     cout << "A / B = " << delta() << endl;
+
+    differ(delta);
+
+    cout << "       deri : " << A.get_derivative() << endl;
+    cout << "       deri : " << B.get_derivative() << endl;
+    cout << "       deri : " << C.get_derivative() << endl;
 
     return 0;
 }
