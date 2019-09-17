@@ -42,7 +42,7 @@ namespace automatic_differentiation {
     public:
         constexpr unary_operation(C& c) : c(c), val(0), derivative(0), is_calculated(false) { }
         constexpr auto operator () () { if (!is_calculated) val = Op::apply(c), is_calculated = true; return val; }
-        constexpr void differentiate(type d) { Op::differentiate(derivative, c); }
+        constexpr void differentiate() { Op::differentiate(derivative, c); }
         constexpr void add_derivative(type d = 1) { derivative += d; }
         template <std::size_t I>
         constexpr auto get_operand() { return c; }

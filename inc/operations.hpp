@@ -2,6 +2,14 @@
 #define IG_OPERATIONS_HPP
 
 namespace automatic_differentiation {
+    //struct Template {
+    //    template <class L, class R> static constexpr auto apply(L&& left, R&& right) { return 1.0; }
+    //    template <class T, class L, class R> static constexpr void differentiate(T&& d, L&& left, R&& right) {
+    //        left.add_derivative(d * 1);
+    //        right.add_derivative(d * 1);
+    //    }
+    //};
+
     // 加法
     struct addition {
         template <class L, class R> static constexpr auto apply(L&& left, R&& right) { return (left() + right()); }
@@ -35,16 +43,73 @@ namespace automatic_differentiation {
         }
     };
 
+    // 指数関数
+    struct power {
+        template <class L, class R> static constexpr auto apply(L&& left, R&& right) { return std::pow(left(), right()); }
+        template <class T, class L, class R> static constexpr void differentiate(T&& d, L&& left, R&& right) {
+            left.add_derivative(d * right() * std::pow(left(), right() - 1));
+            right.add_derivative(d * std::pow(left(), right()) * std::log(left()));
+        }
+    };
+    // 対数関数
+    struct logarithm {
+        template <class L, class R> static constexpr auto apply(L&& left, R&& right) { return std::log(right()) / std::log(left()); }
+        template <class T, class L, class R> static constexpr void differentiate(T&& d, L&& left, R&& right) {
+            left.add_derivative(d * (std::log(left()) / right() - std::log(right()) / left()) / (std::pow(std::log(left()), 2) * left()));
+            right.add_derivative(d / (right() * std::log(left())));
+        }
+    };
+
+    //struct Template {
+    //    template <class C> static constexpr auto apply(C&& c) { return 1; }
+    //    template <class T, class C> static constexpr void differentiate(T&& d, C&& c) {
+    //        c.add_derivative(d * 1);
+    //    }
+    //};
+
+    // 三角関数
+    struct sine {
+        template <class C> static constexpr auto apply(C&& c) { return std::sin(c()); }
+        template <class T, class C> static constexpr void differentiate(T&& d, C&& c) {
+            c.add_derivative(d * std::cos(c()));
+        }
+    };
+    struct cosine {
+        template <class C> static constexpr auto apply(C&& c) { return std::cos(c()); }
+        template <class T, class C> static constexpr void differentiate(T&& d, C&& c) {
+            c.add_derivative(d * -1 * std::sin(c()));
+        }
+    };
+    struct tangent {
+        template <class C> static constexpr auto apply(C&& c) { return std::tan(c()); }
+        template <class T, class C> static constexpr void differentiate(T&& d, C&& c) {
+            c.add_derivative(d / std::pow(std::cos(c()), 2));
+        }
+    };
+
     template <class L, class R> using addition_operation = binary_operation<addition, L, R>;
     template <class L, class R> using subtraction_operation = binary_operation<subtraction, L, R>;
     template <class L, class R> using multiplication_operation = binary_operation<multiplication, L, R>;
     template <class L, class R> using division_operation = binary_operation<division, L, R>;
+    template <class L, class R> using power_operation = binary_operation<power, L, R>;
+    template <class L, class R> using logarithm_operation = binary_operation<logarithm, L, R>;
+
+    template <class C>          using sine_operation = unary_operation<sine, C>;
+    template <class C>          using cosine_operation = unary_operation<cosine, C>;
+    template <class C>          using tangent_operation = unary_operation<tangent, C>;
 }
 
 template <class L, class R> auto operator + (L&& left, R&& right) { return automatic_differentiation::addition_operation<L, R>(left, right); }
 template <class L, class R> auto operator - (L&& left, R&& right) { return automatic_differentiation::subtraction_operation<L, R>(left, right); }
 template <class L, class R> auto operator * (L&& left, R&& right) { return automatic_differentiation::multiplication_operation<L, R>(left, right); }
 template <class L, class R> auto operator / (L&& left, R&& right) { return automatic_differentiation::division_operation<L, R>(left, right); }
+
+template <class L, class R> auto pow(L&& left, R&& right) { return automatic_differentiation::power_operation<L, R>(left, right); }
+template <class L, class R> auto log(L&& left, R&& right) { return automatic_differentiation::logarithm_operation<L, R>(left, right); }
+
+template <class C> auto sin(C&& c) { return automatic_differentiation::sine_operation<C>(c); }
+template <class C> auto cos(C&& c) { return automatic_differentiation::cosine_operation<C>(c); }
+template <class C> auto tan(C&& c) { return automatic_differentiation::tangent_operation<C>(c); }
 
 #endif
 

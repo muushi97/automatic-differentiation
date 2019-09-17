@@ -72,34 +72,57 @@ int main() {
     double b = 20;
     double c = 30;
 
+    double pp = 3.14159265359 * 0.5;
+
     value A(a);
     value B(b);
     value C(c);
 
+    value PP(pp);
+
     a = 10000.0;
     b = 2000.0;
-    c = 300.0;
+    c = 3.0;
 
     value D(11.0);
     value E(22.0);
     value G(33.0);
 
-    auto alpha_ = A + A;
     auto alpha = A + A;
     auto beta = A - B;
     auto gamma = A * B;
-    auto delta = A / B + A;
+    auto delta = A / B;
+    auto epsilon = A / B + A;
+    auto zeta = pow(A, C);
+    auto eta = log(C, B);
+    auto theta = sin(PP);
+    auto iota = cos(PP);
+    auto kappa = tan(PP);
 
+    cout << "A = " << A() << endl;
+    cout << "B = " << B() << endl;
+    cout << "C = " << C() << endl;
+    cout << "PP = " << PP() << endl;
+    cout << "D = " << D() << endl;
+    cout << "E = " << E() << endl;
+    cout << "G = " << G() << endl;
     cout << "A + B = " << alpha() << endl;
     cout << "A - B = " << beta() << endl;
     cout << "A * B = " << gamma() << endl;
     cout << "A / B = " << delta() << endl;
+    cout << "A / B - A = " << epsilon() << endl;
+    cout << "A ^ C = " << zeta() << endl;
+    cout << "log_C B = " << eta() << endl;
+    cout << "sin PP = " << theta() << endl;
+    cout << "cos PP = " << iota() << endl;
+    cout << "tan PP = " << kappa() << endl;
 
-    differ(delta);
+    differ(kappa);
 
-    cout << "       deri : " << A.get_derivative() << endl;
-    cout << "       deri : " << B.get_derivative() << endl;
-    cout << "       deri : " << C.get_derivative() << endl;
+    cout << "       deri A : " << A.get_derivative() << endl;
+    cout << "       deri B : " << B.get_derivative() << endl;
+    cout << "       deri C : " << C.get_derivative() << endl;
+    cout << "       deri PP : " << PP.get_derivative() << endl;
 
     return 0;
 }
