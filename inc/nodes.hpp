@@ -77,6 +77,38 @@ namespace automatic_differentiation {
                 return right;
         }
     };
+
+
+    // max
+    template <std::size_t a, std::size_t b>
+    constexpr std::size_t get_max() {
+        if constexpr (a < b)
+            return b;
+        else
+            return a;
+    }
+
+    // property
+    template <class T>
+    struct get_property;
+    template <class T>
+    struct get_property<value<T>> {
+        constexpr static std::size_t size = 1;
+        constexpr static std::size_t height = 0;
+    };
+    template <class Op, class C>
+    struct get_property<unary_operation<Op, C>> {
+        using CC = typename std::conditional_t<std::is_lvalue_reference<C>::value, std::remove_reference_t<C>, C>;
+        constexpr static std::size_t size = 1;
+        constexpr static std::size_t height = get_property<CC>::height + 1;
+    };
+    template <class Op, class L, class R>
+    struct get_property<binary_operation<Op, L, R>> {
+        using LL = typename std::conditional_t<std::is_lvalue_reference<L>::value, std::remove_reference_t<L>, L>;
+        using RR = typename std::conditional_t<std::is_lvalue_reference<R>::value, std::remove_reference_t<R>, R>;
+        constexpr static std::size_t size = 2;
+        constexpr static std::size_t height = get_max<get_property<LL>::height, get_property<RR>::height>() + 1;
+    };
 }
 
 #endif

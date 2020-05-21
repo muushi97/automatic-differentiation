@@ -1,6 +1,8 @@
 #ifndef IG_TUPLE_LIST_HPP
 #define IG_TUPLE_LIST_HPP
 
+#include "nodes.hpp"
+
 namespace automatic_differentiation {
     // リストの宣言
     template <class... Elements>
@@ -32,13 +34,13 @@ namespace automatic_differentiation {
         template <class First, class... Rests>
         constexpr auto merge(First&& f, Rests&&... r) {
             if constexpr (sizeof...(r) == 0) {
-                if constexpr (first_element.height <= f.height)
+                if constexpr (get_property<std::remove_reference_t<FirstElement>>::height <= get_property<std::remove_reference_t<First>>::height)
                     return link_list(std::forward<First>(f), link_list(std::forward<FirstElement>(first_element), std::move(rest_elements)));
                 else
                     return link_list(std::forward<FirstElement>(first_element), rest_elements.merge(std::forward<First>(f)));
             }
             else {
-                if constexpr (first_element.height <= f.height)
+                if constexpr (get_property<std::remove_reference_t<FirstElement>>::height <= get_property<std::remove_reference_t<First>>::height)
                     return link_list(std::forward<First>(f), merge(std::forward<Rests>(r)...));
                 else
                     return link_list(std::forward<FirstElement>(first_element), rest_elements.merge(std::forward<First>(f), std::forward<Rests>(r)...));
@@ -47,32 +49,6 @@ namespace automatic_differentiation {
 
         constexpr auto first() const { return first_element; }
         constexpr tuple_list<RestElements...> pop_front() const { return rest_elements; }
-    };
-    template <class FirstElement>
-    class tuple_list<FirstElement> {
-        FirstElement first_element;
-    public:
-        constexpr static std::size_t size = 1;
-        constexpr tuple_list(FirstElement&& first) : first_element(first) { }
-
-        template <class First, class... Rests>
-        constexpr auto merge(First&& f, Rests&&... r) {
-            if constexpr (sizeof...(r) == 0) {
-                if constexpr (first_element.height <= f.height)
-                    return tuple_list<First, FirstElement>(std::forward<First>(f), make_list(std::forward<FirstElement>(first_element)));
-                else
-                    return tuple_list<FirstElement, First>(std::forward<FirstElement>(first_element), make_list(std::forward<First>(f)));
-            }
-            else {
-                if constexpr (first_element.height <= f.height)
-                    return link_list(std::forward<First>(f), merge(std::forward<Rests>(r)...));
-                else
-                    return link_list(std::forward<FirstElement>(first_element), make_list(std::forward<First>(f), std::forward<Rests>(r)...));
-            }
-        }
-
-        constexpr auto first() const { return first_element; }
-        constexpr auto pop_front() const { return tuple_list<>(); }
     };
     template <>
     class tuple_list<> {
@@ -84,6 +60,32 @@ namespace automatic_differentiation {
         constexpr auto merge(Elements&&... elements) {
             return make_list(std::forward<Elements>(elements)...);
         }
+    };
+    template <class FirstElement>
+    class tuple_list<FirstElement> {
+        FirstElement first_element;
+    public:
+        constexpr static std::size_t size = 1;
+        constexpr tuple_list(FirstElement&& first) : first_element(first) { }
+
+        template <class First, class... Rests>
+        constexpr auto merge(First&& f, Rests&&... r) {
+            if constexpr (sizeof...(r) == 0) {
+                if constexpr (get_property<std::remove_reference_t<FirstElement>>::height <= get_property<std::remove_reference_t<First>>::height)
+                    return tuple_list<First, FirstElement>(std::forward<First>(f), make_list(std::forward<FirstElement>(first_element)));
+                else
+                    return tuple_list<FirstElement, First>(std::forward<FirstElement>(first_element), make_list(std::forward<First>(f)));
+            }
+            else {
+                if constexpr (get_property<std::remove_reference_t<FirstElement>>::height <= get_property<std::remove_reference_t<First>>::height)
+                    return link_list(std::forward<First>(f), merge(std::forward<Rests>(r)...));
+                else
+                    return link_list(std::forward<FirstElement>(first_element), make_list(std::forward<First>(f), std::forward<Rests>(r)...));
+            }
+        }
+
+        constexpr auto first() const { return first_element; }
+        constexpr auto pop_front() const { return tuple_list<>(); }
     };
 
     template <class FirstElement, class... RestElements>
