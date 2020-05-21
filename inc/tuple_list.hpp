@@ -3,7 +3,7 @@
 
 #include "nodes.hpp"
 
-namespace automatic_differentiation {
+namespace autodiffer {
     // リストの宣言
     template <class... Elements>
     class tuple_list;

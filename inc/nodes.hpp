@@ -1,7 +1,7 @@
 #ifndef IG_NODES_HPP
 #define IG_NODES_HPP
 
-namespace automatic_differentiation {
+namespace autodiffer {
     // 葉
     template <class T>
     class value {

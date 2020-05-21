@@ -1,7 +1,7 @@
 #ifndef IG_OPERATIONS_HPP
 #define IG_OPERATIONS_HPP
 
-namespace automatic_differentiation {
+namespace autodiffer {
     //struct Template {
     //    template <class L, class R> static constexpr auto apply(L&& left, R&& right) { return 1.0; }
     //    template <class T, class L, class R> static constexpr void differentiate(T&& d, L&& left, R&& right) {
@@ -99,17 +99,17 @@ namespace automatic_differentiation {
     template <class C>          using tangent_operation = unary_operation<tangent, C>;
 }
 
-template <class L, class R> auto operator + (L&& left, R&& right) { return automatic_differentiation::addition_operation<L, R>(left, right); }
-template <class L, class R> auto operator - (L&& left, R&& right) { return automatic_differentiation::subtraction_operation<L, R>(left, right); }
-template <class L, class R> auto operator * (L&& left, R&& right) { return automatic_differentiation::multiplication_operation<L, R>(left, right); }
-template <class L, class R> auto operator / (L&& left, R&& right) { return automatic_differentiation::division_operation<L, R>(left, right); }
+template <class L, class R> auto operator + (L&& left, R&& right) { return autodiffer::addition_operation<L, R>(left, right); }
+template <class L, class R> auto operator - (L&& left, R&& right) { return autodiffer::subtraction_operation<L, R>(left, right); }
+template <class L, class R> auto operator * (L&& left, R&& right) { return autodiffer::multiplication_operation<L, R>(left, right); }
+template <class L, class R> auto operator / (L&& left, R&& right) { return autodiffer::division_operation<L, R>(left, right); }
 
-template <class L, class R> auto pow(L&& left, R&& right) { return automatic_differentiation::power_operation<L, R>(left, right); }
-template <class L, class R> auto log(L&& left, R&& right) { return automatic_differentiation::logarithm_operation<L, R>(left, right); }
+template <class L, class R> auto pow(L&& left, R&& right) { return autodiffer::power_operation<L, R>(left, right); }
+template <class L, class R> auto log(L&& left, R&& right) { return autodiffer::logarithm_operation<L, R>(left, right); }
 
-template <class C> auto sin(C&& c) { return automatic_differentiation::sine_operation<C>(c); }
-template <class C> auto cos(C&& c) { return automatic_differentiation::cosine_operation<C>(c); }
-template <class C> auto tan(C&& c) { return automatic_differentiation::tangent_operation<C>(c); }
+template <class C> auto sin(C&& c) { return autodiffer::sine_operation<C>(c); }
+template <class C> auto cos(C&& c) { return autodiffer::cosine_operation<C>(c); }
+template <class C> auto tan(C&& c) { return autodiffer::tangent_operation<C>(c); }
 
 #endif
 
