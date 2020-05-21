@@ -1,7 +1,20 @@
 #ifndef IG_NODES_HPP
 #define IG_NODES_HPP
 
+#include <tuple>
+
 namespace autodiffer {
+    // max
+    template <std::size_t a, std::size_t b>
+    constexpr std::size_t get_max() {
+        if constexpr (a < b)
+            return b;
+        else
+            return a;
+    }
+
+
+
     // 葉
     template <class T>
     class value {
@@ -78,15 +91,32 @@ namespace autodiffer {
         }
     };
 
+    // N-term operation
+    //template <class Op, class... Ts>
+    //class N_term_operation {
+    //private:
+    //    std::tuple<Ts...> v;
+    //public:
+    //    using LL = typename std::conditional_t<std::is_lvalue_reference<L>::value, std::remove_reference_t<L>, L>;
+    //    using RR = typename std::conditional_t<std::is_lvalue_reference<R>::value, std::remove_reference_t<R>, R>;
+    //    using type = decltype(Op::apply(left, right));
+    //    constexpr static std::size_t size = sizeof...(Ts);
+    //    constexpr static std::size_t height = std::max(LL::height, RR::height) + 1;
+    //private:
+    //    bool is_calculated;
+    //    type val;
+    //    type derivative;
+    //public:
+    //    constexpr binary_operation(Ts&... v) : v(v...), derivative(0), is_calculated(false) { }
+    //    constexpr auto operator () () { if (!is_calculated) val = Op::apply(left, right), is_calculated = true; return val; }
+    //    constexpr void differentiate() { Op::differentiate(derivative, left, right); }
+    //    constexpr void add_derivative(type d = 1) { derivative += d; }
+    //    template <std::size_t I>
+    //    constexpr auto get_operand() {
+    //        return std::get<I>(v);
+    //    }
+    //};
 
-    // max
-    template <std::size_t a, std::size_t b>
-    constexpr std::size_t get_max() {
-        if constexpr (a < b)
-            return b;
-        else
-            return a;
-    }
 
     // property
     template <class T>
